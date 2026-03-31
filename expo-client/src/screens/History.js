@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { GlobalStore } from '../GlobalStore';
+import { API_BASE_URL } from '../config';
 
 export default function HistoryScreen({ navigation }) {
   const [history, setHistory] = useState([]);
@@ -10,7 +11,7 @@ export default function HistoryScreen({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
-      fetch(`http://localhost:3000/api/history/${GlobalStore.userId}`)
+      fetch(`${API_BASE_URL}/api/history/${GlobalStore.userId}`)
         .then(res => res.json())
         .then(data => {
           setHistory(data.history || []);

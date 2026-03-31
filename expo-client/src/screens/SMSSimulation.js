@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput, ActivityIndicator } from 'react-native';
 import { GlobalStore } from '../GlobalStore';
+import { API_BASE_URL } from '../config';
 
 export default function SMSSimulation({ navigation }) {
   const [payeeId, setPayeeId] = useState('');
@@ -14,7 +15,7 @@ export default function SMSSimulation({ navigation }) {
 
     const clean = text.trim();
     if (clean.length >= 6) {
-      fetch(`http://localhost:3000/api/user/lookup/${clean}`)
+      fetch(`${API_BASE_URL}/api/user/lookup/${clean}`)
         .then(res => res.json())
         .then(data => {
           if (data.found) setMatchedUser(data);
@@ -34,7 +35,7 @@ export default function SMSSimulation({ navigation }) {
     }
     setLoading(true);
     const resolvedPayeeId = matchedUser?.id || payeeId;
-    fetch('http://localhost:3000/settle', {
+    fetch(`${API_BASE_URL}/settle`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

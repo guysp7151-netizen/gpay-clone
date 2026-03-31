@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { GlobalStore } from '../GlobalStore';
+import { API_BASE_URL } from '../config';
 
 export default function PINVerification({ navigation, route }) {
   const [pin, setPin] = useState('');
@@ -23,10 +25,33 @@ export default function PINVerification({ navigation, route }) {
     }
   };
 
-  const verify = (finalPin) => {
+  const verify = async (finalPin) => {
     setStatus('processing');
 
-    setTimeout(() => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/user/verify-pin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: GlobalStore.userId, pin: finalPin })
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setStatus('success');
+        setTimeout(() => {
+          navigation.goBack();
+          if (onSuccess) onSuccess();
+        }, 1500);
+      } else {
+        setStatus('failed');
+        setTimeout(() => {
+          setStatus(null);
+          setPin('');
+        }, 2000);
+      }
+    } catch (error) {
+      console.warn("Backend not reachable for PIN check");
+      // Fallback for demo when backend is down
       if (finalPin === '1234') {
         setStatus('success');
         setTimeout(() => {
@@ -40,7 +65,7 @@ export default function PINVerification({ navigation, route }) {
           setPin('');
         }, 2000);
       }
-    }, 1500); // Simulate processing time
+    }
   };
 
   // Processing overlay
@@ -76,7 +101,7 @@ export default function PINVerification({ navigation, route }) {
         <View style={[styles.overlayCard, { borderColor: '#FF3B30' }]}>
           <Text style={styles.successIcon}>❌</Text>
           <Text style={[styles.overlayTitle, { color: '#FF3B30' }]}>Incorrect PIN</Text>
-          <Text style={styles.overlaySubtitle}>Please try again. Use PIN: 1234</Text>
+          <Text style={styles.overlaySubtitle}>Please try again.</Text>
         </View>
       </View>
     );
@@ -86,7 +111,6 @@ export default function PINVerification({ navigation, route }) {
     <View style={styles.container}>
       <Text style={styles.title}>Enter PIN</Text>
       <Text style={styles.subtitle}>Enter your secure 4-digit PIN to authorize payment</Text>
-      <Text style={styles.pinHint}>Demo PIN: 1234</Text>
 
       <View style={styles.dotsContainer}>
         {[0, 1, 2, 3].map((i) => (

@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-
 import { GlobalStore } from '../GlobalStore';
+import { API_BASE_URL } from '../config';
 
 export default function ProfileScreen({ navigation }) {
   const [profile, setProfile] = useState(null);
@@ -11,7 +11,7 @@ export default function ProfileScreen({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
-      fetch(`http://localhost:3000/api/user/profile/${GlobalStore.userId}`)
+      fetch(`${API_BASE_URL}/api/user/profile/${GlobalStore.userId}`)
         .then(res => res.json())
         .then(data => {
           setProfile(data);

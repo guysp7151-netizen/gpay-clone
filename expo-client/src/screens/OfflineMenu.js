@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { GlobalStore } from '../GlobalStore';
+import { API_BASE_URL as API } from '../config';
 
-const API = 'http://localhost:3000';
 
 // Reusable user lookup badge
 function UserBadge({ user }) {

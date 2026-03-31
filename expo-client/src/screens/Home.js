@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, StatusBar, ScrollView } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { GlobalStore } from '../GlobalStore';
+import { API_BASE_URL } from '../config';
 
 export default function HomeScreen({ navigation }) {
   const [onlineBalance, setOnlineBalance] = useState(25000);
@@ -12,14 +13,14 @@ export default function HomeScreen({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       setUserId(GlobalStore.userId || 'user_1');
-      fetch(`http://localhost:3000/api/user/wallet/${GlobalStore.userId}`)
+      fetch(`${API_BASE_URL}/api/user/wallet/${GlobalStore.userId}`)
         .then(res => res.json())
         .then(data => {
           setOnlineBalance(data.onlineBalance || 0);
           setOfflineBalance(data.offlineBalance || 0);
         })
         .catch(e => { setOnlineBalance(25000); setOfflineBalance(2000); });
-      fetch(`http://localhost:3000/api/user/profile/${GlobalStore.userId}`)
+      fetch(`${API_BASE_URL}/api/user/profile/${GlobalStore.userId}`)
         .then(res => res.json())
         .then(data => {
           setUserName(data.name || 'User');
@@ -32,7 +33,7 @@ export default function HomeScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
       <View style={styles.header}>
-        <Text style={styles.title}>SignalPay</Text>
+        <Text style={styles.title}>SmartPay</Text>
         <TouchableOpacity style={styles.profileBadge} onPress={() => navigation.navigate('Profile')}>
           <Text style={styles.profileBadgeText}>Profile</Text>
         </TouchableOpacity>

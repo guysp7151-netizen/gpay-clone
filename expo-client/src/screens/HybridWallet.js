@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { GlobalStore } from '../GlobalStore';
+import { API_BASE_URL } from '../config';
 
 export default function HybridWallet({ navigation }) {
   const [amount, setAmount] = useState('');
@@ -14,7 +15,7 @@ export default function HybridWallet({ navigation }) {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/api/user/wallet/transfer', {
+      const response = await fetch(`${API_BASE_URL}/api/user/wallet/transfer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: GlobalStore.userId, direction, amount: amountNum })

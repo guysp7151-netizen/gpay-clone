@@ -12,7 +12,7 @@ export default function SplashScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>GPay Clone</Text>
+      <Text style={styles.title}>SmartPay</Text>
       <Text style={styles.subtitle}>Secure Hybrid Offline Wallet</Text>
       <ActivityIndicator size="large" color="#00FFA3" style={{ marginTop: 40 }} />
     </View>

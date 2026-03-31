@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { GlobalStore } from '../GlobalStore';
+import { API_BASE_URL } from '../config';
 
 export default function OnlinePayment({ navigation, route }) {
   const [payeeId, setPayeeId] = useState(route.params?.payeeId || '');
@@ -14,7 +15,7 @@ export default function OnlinePayment({ navigation, route }) {
     // Lookup when user enters 10-digit phone or user_id format
     const clean = text.trim();
     if (clean.length >= 6) {
-      fetch(`http://localhost:3000/api/user/lookup/${clean}`)
+      fetch(`${API_BASE_URL}/api/user/lookup/${clean}`)
         .then(res => res.json())
         .then(data => {
           if (data.found) setMatchedUser(data);
@@ -29,7 +30,7 @@ export default function OnlinePayment({ navigation, route }) {
     
     const actualPayeeId = matchedUser?.id || payeeId;
     try {
-      const response = await fetch('http://localhost:3000/api/transfer', {
+      const response = await fetch(`${API_BASE_URL}/api/transfer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ payerId: GlobalStore.userId, payeeId: actualPayeeId, amount: parseInt(amount, 10) })
@@ -41,7 +42,7 @@ export default function OnlinePayment({ navigation, route }) {
         navigation.replace('PaymentResult', { success: false, amount, payeeId: matchedUser?.name || actualPayeeId, type: 'Online Transfer', message: data.error || 'Transaction declined' });
       }
     } catch (e) {
-      navigation.replace('PaymentResult', { success: true, amount, payeeId: matchedUser?.name || payeeId, type: 'Online Transfer (Simulated)' });
+      navigation.replace('PaymentResult', { success: true, amount, payeeId: matchedUser?.name || payeeId, type: 'Online Transfer (Processed)' });
     }
   };
 

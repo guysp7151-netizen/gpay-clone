@@ -57,7 +57,7 @@ export default function BankLinkScreen({ navigation, route }) {
         <Text style={styles.primaryButtonText}>Verify via SMS & Link</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.secondaryButton} onPress={handleSkip}>
-        <Text style={styles.secondaryButtonText}>Simulate Skipping</Text>
+        <Text style={styles.secondaryButtonText}>Skip Setup</Text>
       </TouchableOpacity>
 
       <Modal visible={modalVisible} animationType="slide" transparent={true}>

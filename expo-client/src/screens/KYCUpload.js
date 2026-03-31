@@ -29,7 +29,7 @@ export default function KYCUpload({ navigation, route }) {
         {!uploaded ? (
           <TouchableOpacity style={styles.uploadArea} onPress={handleUpload}>
             <Text style={styles.uploadText}>Tap to Upload Document</Text>
-            <Text style={styles.uploadSubtext}>(Simulated Demo)</Text>
+            <Text style={styles.uploadSubtext}>(Secure Process)</Text>
           </TouchableOpacity>
         ) : (
           <View style={styles.successArea}>

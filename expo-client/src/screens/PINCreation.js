@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { API_BASE_URL } from '../config';
 
 export default function PINCreation({ navigation, route }) {
   const [pin, setPin] = useState('');
@@ -39,7 +40,7 @@ export default function PINCreation({ navigation, route }) {
     if (pin === finalConfirmPin) {
       // Mock registration API call or proceed to Bank Link
       try {
-        const response = await fetch('http://localhost:3000/api/user/register', {
+        const response = await fetch(`${API_BASE_URL}/api/user/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

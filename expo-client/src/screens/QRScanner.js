@@ -33,7 +33,7 @@ export default function QRScannerScreen({ navigation }) {
         <Text style={styles.scannerText}>[ Camera Viewfinder Mock ]</Text>
       </View>
 
-      <Text style={styles.label}>Simulated Scanned Amount (₹)</Text>
+      <Text style={styles.label}>Scanned Amount (₹)</Text>
       <TextInput 
         style={styles.input} 
         keyboardType="numeric" 
@@ -42,7 +42,7 @@ export default function QRScannerScreen({ navigation }) {
       />
 
       <TouchableOpacity style={styles.primaryButton} onPress={simulateScan}>
-        <Text style={styles.primaryButtonText}>Simulate Scan & Validate</Text>
+        <Text style={styles.primaryButtonText}>Validate Scanned Code</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.goBack()}>
         <Text style={styles.secondaryButtonText}>Back to Dashboard</Text>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { GlobalStore } from '../GlobalStore';
+import { API_BASE_URL } from '../config';
 
 export default function OTPScreen({ navigation, route }) {
   const [otp, setOtp] = useState('');
@@ -8,7 +9,7 @@ export default function OTPScreen({ navigation, route }) {
 
   const handleVerifyOtp = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/auth/otp', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: mobileNumber, otp })
@@ -25,7 +26,7 @@ export default function OTPScreen({ navigation, route }) {
           navigation.replace('Home');
         }
       } else {
-        Alert.alert('Error', data.error || 'Invalid OTP. For this demo, please use 1234.');
+        Alert.alert('Error', data.error || 'Invalid OTP. For test accounts, please use 1234.');
       }
     } catch (error) {
       // Backend not reachable — use demo user directly
@@ -33,7 +34,7 @@ export default function OTPScreen({ navigation, route }) {
         GlobalStore.userId = 'user_1';
         navigation.replace('Home');
       } else {
-        Alert.alert('Error', 'Invalid OTP. For this demo, please use 1234.');
+        Alert.alert('Error', 'Invalid OTP. For test accounts, please use 1234.');
       }
     }
   };
@@ -47,7 +48,7 @@ export default function OTPScreen({ navigation, route }) {
         <TextInput
           style={styles.input}
           keyboardType="number-pad"
-          placeholder="Enter 1234 for demo"
+          placeholder="Enter 1234 for test accounts"
           placeholderTextColor="#666"
           secureTextEntry
           value={otp}
