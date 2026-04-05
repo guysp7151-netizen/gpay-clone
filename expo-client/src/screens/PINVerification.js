@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GlobalStore } from '../GlobalStore';
 import { API_BASE_URL } from '../config';
 
@@ -50,9 +51,10 @@ export default function PINVerification({ navigation, route }) {
         }, 2000);
       }
     } catch (error) {
-      console.warn("Backend not reachable for PIN check");
-      // Fallback for demo when backend is down
-      if (finalPin === '1234') {
+      console.warn("Backend not reachable for PIN check. Checking local cache.");
+      const localPin = await AsyncStorage.getItem('user_pin');
+      
+      if (localPin && localPin === finalPin) {
         setStatus('success');
         setTimeout(() => {
           navigation.goBack();

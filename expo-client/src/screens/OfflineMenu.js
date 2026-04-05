@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GlobalStore } from '../GlobalStore';
 import { API_BASE_URL as API } from '../config';
+import { signOfflineTransaction } from '../crypto';
 
 
 // Reusable user lookup badge
@@ -45,7 +47,10 @@ export default function OfflineMenu({ navigation }) {
           if (data.found) setMatched(data);
           else setMatched({ notFound: true });
         })
-        .catch(() => {});
+        .catch(() => {
+          // Offline fallback
+          setMatched({ id: clean, name: `Unverified User (${clean})` });
+        });
     }
   };
 
@@ -59,8 +64,8 @@ export default function OfflineMenu({ navigation }) {
     lookupUser(text, setMatchedPayer);
   };
 
-  // --- Send payment ---
-  const handlePayOffline = () => {
+  // --- Send payment (TRULY OFFLINE — stores locally, syncs later) ---
+  const handlePayOffline = async () => {
     const amountNum = parseFloat(amount);
     if (!matchedPayee || matchedPayee.notFound) {
       return Alert.alert('Error', 'Please enter a valid payee ID or phone number.');
@@ -68,43 +73,47 @@ export default function OfflineMenu({ navigation }) {
     if (isNaN(amountNum) || amountNum <= 0) {
       return Alert.alert('Error', 'Enter a valid amount.');
     }
+    if (amountNum > 2000) {
+      return Alert.alert('Offline Limit Exceeded', 'Maximum offline transaction is ₹2,000.');
+    }
+
     setLoading(true);
-    setStatus(`Connecting to ${matchedPayee.name} via Bluetooth...`);
-    setTimeout(() => {
-      setStatus(`Connected! Sending ₹${amountNum} to ${matchedPayee.name}...`);
-      fetch(`${API}/settle`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          payerId: GlobalStore.userId,
-          payeeId: matchedPayee.id,
-          amount: amountNum,
-          nonce: `nonce_${Date.now()}`,
-          signature: 'SIMULATED_BLE_SIG',
-          timestamp: new Date().toISOString(),
-        }),
-      })
-        .then(r => r.json())
-        .then(data => {
-          setLoading(false);
-          if (data.success) {
-            navigation.replace('PaymentResult', {
-              success: true,
-              amount: amountNum.toString(),
-              payeeId: matchedPayee.name,
-              type: 'Offline (Bluetooth)',
-            });
-          } else {
-            setStatus('System Ready');
-            Alert.alert('Transfer Failed', data.error || 'Something went wrong.');
-          }
-        })
-        .catch(() => {
-          setLoading(false);
-          setStatus('System Ready');
-          Alert.alert('Network Error', 'Could not reach the server.');
-        });
-    }, 1500);
+    setStatus(`📡 Scanning for ${matchedPayee.name} via Bluetooth...`);
+
+    // Step 1: Simulate BLE handshake (1.5 sec)
+    await new Promise(r => setTimeout(r, 1500));
+    setStatus(`🔗 Connected! Signing transaction cryptographically...`);
+
+    try {
+      // Step 2: Sign transaction LOCALLY — no internet needed
+      const secretKey = GlobalStore.secretKey || 'DEMO_SECRET_KEY_BASE64';
+      const signedTx = signOfflineTransaction(
+        GlobalStore.userId,
+        matchedPayee.id,
+        amountNum,
+        secretKey
+      );
+
+      // Step 3: Save to local AsyncStorage queue (works WITHOUT internet)
+      const existing = await AsyncStorage.getItem('pending_offline_txns');
+      const queue = existing ? JSON.parse(existing) : [];
+      queue.push({ ...signedTx, payeeName: matchedPayee.name });
+      await AsyncStorage.setItem('pending_offline_txns', JSON.stringify(queue));
+
+      setLoading(false);
+      // Step 4: Show success — settlement happens later when online
+      navigation.replace('PaymentResult', {
+        success: true,
+        amount: amountNum.toString(),
+        payeeId: matchedPayee.name,
+        type: 'Offline (Bluetooth)',
+        message: `₹${amountNum} queued for settlement. Go to Sync Status when back online.`
+      });
+    } catch (e) {
+      setLoading(false);
+      setStatus('System Ready');
+      Alert.alert('Error', 'Failed to sign transaction: ' + e.message);
+    }
   };
 
   // --- Receive payment ---

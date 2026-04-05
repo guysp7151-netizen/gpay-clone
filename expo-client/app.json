@@ -29,9 +29,11 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "apiUrl": "https://gpay-backend.onrender.com"
+      "apiUrl": "https://gpay-backend.onrender.com",
+      "eas": {
+        "projectId": "cd492738-0d8d-4e96-b73c-c87590a29b50"
+      }
     },
     "plugins": []
   }
 }
-

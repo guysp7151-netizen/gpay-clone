@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GlobalStore } from '../GlobalStore';
 import { API_BASE_URL } from '../config';
+import { signOfflineTransaction } from '../crypto';
 
 export default function SMSSimulation({ navigation }) {
   const [payeeId, setPayeeId] = useState('');
@@ -21,11 +23,13 @@ export default function SMSSimulation({ navigation }) {
           if (data.found) setMatchedUser(data);
           else setMatchedUser({ notFound: true });
         })
-        .catch(() => {});
+        .catch(() => {
+          setMatchedUser({ id: clean, name: `Unverified User (${clean})` });
+        });
     }
   };
 
-  const handleSendSMS = () => {
+  const handleSendSMS = async () => {
     const amountNum = parseFloat(amount);
     if (!payeeId || isNaN(amountNum) || amountNum <= 0) {
       return Alert.alert('Error', 'Enter details first.');
@@ -35,31 +39,33 @@ export default function SMSSimulation({ navigation }) {
     }
     setLoading(true);
     const resolvedPayeeId = matchedUser?.id || payeeId;
-    fetch(`${API_BASE_URL}/settle`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        payerId: GlobalStore.userId,
-        payeeId: resolvedPayeeId,
-        amount: amountNum,
-        nonce: `sms_${Date.now()}`,
-        signature: 'SIMULATED_SMS_SIG',
-        timestamp: new Date().toISOString(),
-      }),
-    })
-      .then(res => res.json())
-      .then(data => {
-        setLoading(false);
-        if (data.success) {
-          navigation.replace('PaymentResult', { success: true, amount: amountNum.toString(), payeeId: matchedUser?.name || payeeId, type: 'SMS Fallback' });
-        } else {
-          Alert.alert('Transfer Failed', data.error || 'Something went wrong.');
-        }
-      })
-      .catch(() => {
-        setLoading(false);
-        Alert.alert('Network Error', 'Could not reach the server.');
+    
+    try {
+      const secretKey = GlobalStore.secretKey || 'DEMO_SECRET_KEY_BASE64';
+      const signedTx = signOfflineTransaction(
+        GlobalStore.userId,
+        resolvedPayeeId,
+        amountNum,
+        secretKey
+      );
+      
+      const existing = await AsyncStorage.getItem('pending_offline_txns');
+      const queue = existing ? JSON.parse(existing) : [];
+      queue.push({ ...signedTx, payeeName: matchedUser?.name || payeeId, type: 'SMS_FALLBACK' });
+      await AsyncStorage.setItem('pending_offline_txns', JSON.stringify(queue));
+
+      setLoading(false);
+      navigation.replace('PaymentResult', { 
+        success: true, 
+        amount: amountNum.toString(), 
+        payeeId: matchedUser?.name || payeeId, 
+        type: 'SMS Fallback',
+        message: `₹${amountNum} transaction details queued. Sent via SMS.` 
       });
+    } catch (e) {
+      setLoading(false);
+      Alert.alert('Error', 'Failed to generate cryptographic SMS: ' + e.message);
+    }
   };
 
   return (

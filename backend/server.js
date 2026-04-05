@@ -74,7 +74,7 @@ app.post('/api/auth/otp', async (req, res) => {
     const result = await pool.query('SELECT * FROM users WHERE phone = $1', [req.body.phone]);
     const row = result.rows[0];
     if (row) {
-      return res.json({ token: 'mock_jwt_token', userId: row.id, isNewUser: false });
+      return res.json({ token: 'mock_jwt_token', userId: row.id, pin: row.pin, isNewUser: false });
     }
     return res.json({ token: 'mock_temp_token', isNewUser: true });
   } catch (err) {

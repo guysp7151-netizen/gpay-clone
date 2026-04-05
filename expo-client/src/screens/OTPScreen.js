@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GlobalStore } from '../GlobalStore';
 import { API_BASE_URL } from '../config';
 
@@ -19,6 +20,9 @@ export default function OTPScreen({ navigation, route }) {
       if (response.ok) {
         if (data.userId) {
           GlobalStore.userId = data.userId;
+        }
+        if (data.pin) {
+          await AsyncStorage.setItem('user_pin', data.pin);
         }
         if (data.isNewUser) {
           navigation.replace('RegistrationDetails', { mobileNumber });

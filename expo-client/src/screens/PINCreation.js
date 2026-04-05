@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../config';
 
 export default function PINCreation({ navigation, route }) {
@@ -59,6 +60,7 @@ export default function PINCreation({ navigation, route }) {
             GlobalStore.name = name;
             GlobalStore.routePhone = mobileNumber;
           });
+          await AsyncStorage.setItem('user_pin', finalConfirmPin);
           navigation.navigate('BankLink', { userId: data.userId, isRegistration: true });
         } else {
           Alert.alert('Error', data.error || 'Registration failed');
