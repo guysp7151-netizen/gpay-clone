@@ -36,6 +36,7 @@ export default function OTPScreen({ navigation, route }) {
       // Backend not reachable — use demo user directly
       if (otp === '1234') {
         GlobalStore.userId = 'user_1';
+        await AsyncStorage.setItem('user_pin', '1234');
         navigation.replace('Home');
       } else {
         Alert.alert('Error', 'Invalid OTP. For test accounts, please use 1234.');
